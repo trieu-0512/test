@@ -1,0 +1,35 @@
+INT CRS232::ReadString(string& read_data, const char* tmnl, int timeout)
+{
+	int		ret = -1/*ERROR_SUCCESS*/;
+	char	buffer[4096];
+	DWORD	ta;
+	DWORD	tb;
+	
+	string str_tmnl = tmnl; // Hai add
+
+	buffer[0] = 0x00;
+	read_data.clear();
+	ta = ::GetTickCount();
+	while (1/*ret == ERROR_SUCCESS*/)
+	{
+		buffer[0] = 0x00;
+		ret = ReadString(buffer, _countof(buffer));
+		read_data += buffer;
+		//if ((strstr(buffer, tmnl) != NULL)/* && (ret==ERROR_SUCCESS)*/)
+		if (read_data.find(str_tmnl)!= std::string::npos) // Hai modify
+		{
+			ret = ERROR_SUCCESS;
+			break;
+		}
+		Sleep(10);
+
+		tb = ::GetTickCount();
+		if ((tb-ta)>(DWORD)timeout)
+			break;
+	}
+
+	if ((read_data.empty() != true)  && (ret==RS232_READ_FAIL+100))
+		return ERROR_SUCCESS;
+	else
+		return ret;
+}
