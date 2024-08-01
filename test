@@ -1,0 +1,73 @@
+int CDut::cmd_dut_connect_time(const char* item, const Json::Value& param)  // min add 240312
+{
+	int ret = S_FALSE;
+	bool is_port_open = false;
+	string item_name;
+	string port_nickname;
+	int times = 0;
+	string r_tmnl_1;
+	string r_tmnl_2;
+	unsigned int wr_wait;
+	unsigned int r_timeout;
+	string serial_result = "";
+	string reg_result;
+	int test_result = S_FALSE;
+	string serial_cmd;
+	std::vector<string> cmd_list;
+
+	DWORD	ta;
+	DWORD	tb;
+	double delta_time;
+
+	ParamStr(param, "item_name", item_name, "");
+	ParamStr(param, "port_nickname", port_nickname, "");
+	ParamStr(param, "r_tmnl_1", r_tmnl_1, "");
+	ParamStr(param, "r_tmnl_2", r_tmnl_2, "");
+	wr_wait = ParamInt(param, "wr_wait", 100);
+	r_timeout = ParamInt(param, "r_timeout", 15000);
+	serial_cmd = param["w_cmd"].asString();
+	serial_cmd = serial_cmd + "\r";
+	string cmd_enter = "\r";
+	
+	ta = ::GetTickCount();
+
+	if (use_comport(port_nickname.c_str()) != NULL)
+	{
+		is_port_open = use_comport(port_nickname.c_str())->IsOpen();
+		if (!is_port_open)
+			ret = use_comport(port_nickname.c_str())->Open();
+
+		if ((is_port_open == true) || (ret == S_OK))
+		{
+			Sleep(50);
+			ret = use_comport(port_nickname.c_str())->ReadString(serial_result, r_tmnl_1.c_str(), r_timeout);
+			m_rdlog->WriteLogf(" serial_result:%s<:)\n", serial_result.c_str());
+
+			if ((serial_result.empty()) || (serial_result.find(r_tmnl_1) != std::string::npos))
+			{
+				Sleep(20);
+				ret = use_comport(port_nickname.c_str())->WRString(serial_cmd.c_str(), serial_result, r_tmnl_2.c_str(), 100, r_timeout);
+				m_rdlog->WriteLogf(" serial_result:%s<:)\n", serial_result.c_str());
+			}
+
+			if (!is_port_open)
+				use_comport(port_nickname.c_str())->Close();
+		}
+		else
+			m_rdlog->WriteLogf(" failed to open com port (%s)\n", use_comport(port_nickname.c_str())->ComName());
+	}
+
+	if (serial_result.find(r_tmnl_2) != std::string::npos)
+	{
+		test_result = S_OK;
+		Sleep(200);
+	}
+
+	tb = ::GetTickCount();
+	delta_time = (tb - ta) / 1000;
+	if (test_result == S_OK)
+		test_result = log_sfis_and_set_info(item_name.c_str(), delta_time);
+	else
+		log_sfis_and_set_info_no_judge(item_name.c_str(), CSfisCsv::Fail, "FAIL");
+	return test_result;
+}
