@@ -1,86 +1,32 @@
-import time
-import subprocess
-import win32gui
-import win32con
-import win32api
-from PIL import ImageGrab
-import pytesseract
+INT CRS232::ReadString(string& read_data, const char* tmnl, int timeout)
+{
+	int		ret = -1/*ERROR_SUCCESS*/;
+	char	buffer[4096];
+	DWORD	ta;
+	DWORD	tb;
+	
+	buffer[0] = 0x00;
+	read_data.clear();
+	ta = ::GetTickCount();
+	while (1/*ret == ERROR_SUCCESS*/)
+	{
+		buffer[0] = 0x00;
+		ret = ReadString(buffer, _countof(buffer));
+		read_data += buffer;
+		if ((strstr(buffer, tmnl)!=NULL)/* && (ret==ERROR_SUCCESS)*/)
+		{
+			ret = ERROR_SUCCESS;
+			break;
+		}
+		Sleep(10);
 
-def find_window(title):
-    def enum_windows_proc(hwnd, result_list):
-        if win32gui.IsWindowVisible(hwnd) and title in win32gui.GetWindowText(hwnd):
-            result_list.append(hwnd)
-    hwnd_list = []
-    win32gui.EnumWindows(enum_windows_proc, hwnd_list)
-    return hwnd_list
+		tb = ::GetTickCount();
+		if ((tb-ta)>(DWORD)timeout)
+			break;
+	}
 
-def click_button_in_window(hwnd, button_text):
-    def callback(hwnd, lParam):
-        if win32gui.GetWindowText(hwnd) == button_text:
-            win32api.SendMessage(hwnd, win32con.BM_CLICK, 0, 0)
-        return True
-
-    win32gui.EnumChildWindows(hwnd, callback, None)
-
-def press_enter_until_upload_appears():
-    while True:
-        # Nhấn Enter
-        win32api.keybd_event(win32con.VK_RETURN, 0, 0, 0)
-        win32api.keybd_event(win32con.VK_RETURN, 0, win32con.KEYEVENTF_KEYUP, 0)
-        time.sleep(1)  # Chờ 1 giây giữa các lần nhấn
-
-        # Kiểm tra xem cửa sổ 'Upload' đã xuất hiện chưa
-        upload_windows = find_window('Upload')
-        if upload_windows:
-            return upload_windows[0]
-
-def get_status_text(hwnd):
-    # Chụp ảnh màn hình của cửa sổ
-    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-    screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
-
-    # Sử dụng OCR để nhận diện văn bản từ ảnh
-    status_text = pytesseract.image_to_string(screenshot)
-
-    return status_text
-
-def open_program_and_click():
-    # Mở chương trình (thay thế 'your_program.exe' bằng đường dẫn thực tế đến chương trình của bạn)
-    subprocess.Popen(['your_program.exe'])
-    
-    # Chờ chương trình mở hoàn toàn (tùy chỉnh thời gian chờ theo thực tế)
-    time.sleep(10)
-    
-    # Tìm cửa sổ của chương trình bằng tên của nó (thay thế 'Program Title' bằng tiêu đề cửa sổ của chương trình của bạn)
-    hwnd_list = find_window('Program Title')
-    
-    if hwnd_list:
-        hwnd = hwnd_list[0]
-        # Click nút "offline" trong cửa sổ (thay thế 'Offline' bằng text của nút trong giao diện người dùng của bạn)
-        click_button_in_window(hwnd, 'Offline')
-
-        # Nhấn Enter cho đến khi cửa sổ 'Upload' xuất hiện
-        upload_hwnd = press_enter_until_upload_appears()
-
-        if upload_hwnd:
-            while True:
-                # Click nút 'Start' trong cửa sổ 'Upload'
-                click_button_in_window(upload_hwnd, 'Start')
-                time.sleep(5)  # Chờ để trạng thái cập nhật
-
-                # Kiểm tra trạng thái
-                status_text = get_status_text(upload_hwnd)
-                if 'Pass' in status_text:
-                    print("Trạng thái: Pass - Đóng chương trình")
-                    # Đóng chương trình
-                    win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
-                    break
-                elif 'Fail' in status_text or 'WIEOTR' in status_text:
-                    print("Trạng thái: Fail hoặc WIEOTR - Thử lại")
-                else:
-                    print("Trạng thái không xác định, thử lại")
-    else:
-        print("Không tìm thấy cửa sổ chương trình")
-
-# Gọi hàm ngay lập tức để thử nghiệm
-open_program_and_click()
+	if ((read_data.empty() != true)  && (ret==RS232_READ_FAIL+100))
+		return ERROR_SUCCESS;
+	else
+		return ret;
+}
