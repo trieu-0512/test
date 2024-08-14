@@ -1,73 +1,59 @@
-int CDut::cmd_dut_connect_time(const char* item, const Json::Value& param)  // min add 240312
+int CDut::cmd_control_light_panel(const char* item, const Json::Value& param)  // jack add
 {
 	int ret = S_FALSE;
 	bool is_port_open = false;
 	string item_name;
 	string port_nickname;
+	int retry = ParamInt(param, "retry", 0);
 	int times = 0;
-	string r_tmnl_1;
-	string r_tmnl_2;
+	string serial_cmd;
 	unsigned int wr_wait;
 	unsigned int r_timeout;
+	unsigned int chanel;
+	unsigned int brightness;
 	string serial_result = "";
 	string reg_result;
 	int test_result = S_FALSE;
-	string serial_cmd;
-	std::vector<string> cmd_list;
-
-	DWORD	ta;
-	DWORD	tb;
-	double delta_time;
 
 	ParamStr(param, "item_name", item_name, "");
+	chanel = ParamInt(param, "chanel", 2);
+	brightness = ParamInt(param, "brightness", 1);
 	ParamStr(param, "port_nickname", port_nickname, "");
-	ParamStr(param, "r_tmnl_1", r_tmnl_1, "");
-	ParamStr(param, "r_tmnl_2", r_tmnl_2, "");
-	wr_wait = ParamInt(param, "wr_wait", 100);
-	r_timeout = ParamInt(param, "r_timeout", 15000);
-	serial_cmd = param["w_cmd"].asString();
-	serial_cmd = serial_cmd + "\r";
-	string cmd_enter = "\r";
-	
-	ta = ::GetTickCount();
+	wr_wait = ParamInt(param, "wr_wait", 10);
+	r_timeout = ParamInt(param, "r_timeout", 500);
 
-	if (use_comport(port_nickname.c_str()) != NULL)
+	char hex_str[5];
+	sprintf(hex_str, "0x%02X", brightness);
+
+	char serial_cmd[4096];
+	serial_cmd[0] = 0x54;
+	serial_cmd[1] = 0x4C;
+	serial_cmd[2] = 0x00;
+	serial_cmd[3] = 0x01;
+	serial_cmd[4] = 0x01;
+	serial_cmd[5] = hex_str;
+	/*const char* const_serial_cmd = serial_cmd;*/
+	do
 	{
-		is_port_open = use_comport(port_nickname.c_str())->IsOpen();
-		if (!is_port_open)
-			ret = use_comport(port_nickname.c_str())->Open();
-
-		if ((is_port_open == true) || (ret == S_OK))
+		if (use_comport(port_nickname.c_str()) != NULL)
 		{
-			Sleep(50);
-			ret = use_comport(port_nickname.c_str())->ReadString(serial_result, r_tmnl_1.c_str(), r_timeout);
-			m_rdlog->WriteLogf(" serial_result:%s<:)\n", serial_result.c_str());
+			is_port_open = use_comport(port_nickname.c_str())->IsOpen();
+			if (!is_port_open)
+				ret = use_comport(port_nickname.c_str())->Open();
 
-			if ((serial_result.empty()) || (serial_result.find(r_tmnl_1) != std::string::npos))
-			{
-				Sleep(20);
-				ret = use_comport(port_nickname.c_str())->WRString(serial_cmd.c_str(), serial_result, r_tmnl_2.c_str(), 100, r_timeout);
-				m_rdlog->WriteLogf(" serial_result:%s<:)\n", serial_result.c_str());
-			}
+			m_rdlog->WriteLogf(" serial_cmd(%d):%s\n", ret, serial_cmd.c_str());
+			//ret = use_comport(port_nickname.c_str())->WRString(serial_cmd.c_str(), serial_result, 200);
+			ret = use_comport(port_nickname.c_str())->WriteString(serial_cmd.c_str());
+			m_rdlog->WriteLogf(" serial_result(%d):%s<:)\n", ret, serial_result.c_str());
 
 			if (!is_port_open)
 				use_comport(port_nickname.c_str())->Close();
 		}
+		times++;
+		if (ret == S_OK)
+			log_sfis_and_set_info_no_judge(item_name.c_str(), CSfisCsv::Pass, "PASS");
 		else
-			m_rdlog->WriteLogf(" failed to open com port (%s)\n", use_comport(port_nickname.c_str())->ComName());
-	}
-
-	if (serial_result.find(r_tmnl_2) != std::string::npos)
-	{
-		test_result = S_OK;
-		Sleep(200);
-	}
-
-	tb = ::GetTickCount();
-	delta_time = (tb - ta) / 1000;
-	if (test_result == S_OK)
-		test_result = log_sfis_and_set_info(item_name.c_str(), delta_time);
-	else
-		log_sfis_and_set_info_no_judge(item_name.c_str(), CSfisCsv::Fail, "FAIL");
-	return test_result;
+			log_sfis_and_set_info_no_judge(item_name.c_str(), CSfisCsv::Fail, "FAIL", times > retry);
+	} while (times <= retry && test_result == S_FALSE);
+	return ret;
 }
