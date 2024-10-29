@@ -172,13 +172,13 @@
         <mxCell id="zJ6aimI74YFlfN7VzJeh-72" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="zJ6aimI74YFlfN7VzJeh-1" target="zJ6aimI74YFlfN7VzJeh-46">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="zJ6aimI74YFlfN7VzJeh-73" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Kiểm tra bước thứ J&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="zJ6aimI74YFlfN7VzJeh-73" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Kiểm tra step J&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="-425" y="-160" width="260" height="30" as="geometry" />
         </mxCell>
         <mxCell id="zJ6aimI74YFlfN7VzJeh-76" value="Chú thích" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="-400" y="-120" width="200" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="zJ6aimI74YFlfN7VzJeh-77" value="Flag của bước thứ j được khởi tạo = 0 tại bước đầu mỗi luồng sạc" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="zJ6aimI74YFlfN7VzJeh-76">
+        <mxCell id="zJ6aimI74YFlfN7VzJeh-77" value="Flag của step j được khởi tạo = 0 tại bước đầu mỗi luồng sạc" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="zJ6aimI74YFlfN7VzJeh-76">
           <mxGeometry y="30" width="200" height="30" as="geometry" />
         </mxCell>
         <mxCell id="zJ6aimI74YFlfN7VzJeh-78" value="Item 2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="zJ6aimI74YFlfN7VzJeh-76">
